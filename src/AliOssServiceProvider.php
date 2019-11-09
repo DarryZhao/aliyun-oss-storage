@@ -1,9 +1,10 @@
 <?php
 
-namespace Jacobcyl\AliOSS;
+namespace DarryZhao\AliOSS;
 
-use Jacobcyl\AliOSS\Plugins\PutFile;
-use Jacobcyl\AliOSS\Plugins\PutRemoteFile;
+use DarryZhao\AliOSS\Plugins\GetPrivateUrl;
+use DarryZhao\AliOSS\Plugins\GetPublicUrl;
+use DarryZhao\AliOSS\Plugins\PutRemoteFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -20,40 +21,35 @@ class AliOssServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //发布配置文件
-        /*
-        if (function_exists('config_path')) {
-            $this->publishes([
-                __DIR__ . '/config/config.php' => config_path('alioss.php'),
-            ], 'config');
-        }
-        */
-
-        Storage::extend('oss', function($app, $config)
-        {
-            $accessId  = $config['access_id'];
+        Storage::extend('oss', function ($app, $config) {
+            $accessId = $config['access_id'];
             $accessKey = $config['access_key'];
 
-            $cdnDomain = empty($config['cdnDomain']) ? '' : $config['cdnDomain'];
-            $bucket    = $config['bucket'];
-            $ssl       = empty($config['ssl']) ? false : $config['ssl']; 
-            $isCname   = empty($config['isCName']) ? false : $config['isCName'];
-            $debug     = empty($config['debug']) ? false : $config['debug'];
+            $cdnDomain = empty($config['cdn_domain']) ? '' : $config['cdn_domain'];
+            $bucket = $config['bucket'];
+            $ssl = empty($config['ssl']) ? false : $config['ssl'];
+            $debug = empty($config['debug']) ? false : $config['debug'];
 
-            $endPoint  = $config['endpoint']; // 默认作为外部节点
-            $epInternal= $isCname?$cdnDomain:(empty($config['endpoint_internal']) ? $endPoint : $config['endpoint_internal']); // 内部节点
-            
-            if($debug) Log::debug('OSS config:', $config);
+            $isCname = false;
+            if ($config['host_use'] == 'endpoint_internal' && !empty($config['endpoint_internal'])) {
+                $host = $config['endpoint_internal'];
+            } else if ($config['host_use'] == 'cdn_domain' && !empty($config['cdn_domain'])) {
+                $host = $config['cdn_domain'];
+                $isCname = true;
+            } else {
+                $host = $config['endpoint'];
+            }
 
-            $client  = new OssClient($accessId, $accessKey, $epInternal, $isCname);
-            $adapter = new AliOssAdapter($client, $bucket, $endPoint, $ssl, $isCname, $debug, $cdnDomain);
+            if ($debug) Log::debug('OSS config:', $config);
 
-            //Log::debug($client);
-            $filesystem =  new Filesystem($adapter);
-            
-            $filesystem->addPlugin(new PutFile());
+            $client = new OssClient($accessId, $accessKey, $host, $isCname);
+            $adapter = new AliOssAdapter($client, $bucket, $host, $ssl, $isCname, $debug, $cdnDomain);
+
+            $filesystem = new Filesystem($adapter);
+
+            $filesystem->addPlugin(new GetPublicUrl($config));
+            $filesystem->addPlugin(new GetPrivateUrl($config));
             $filesystem->addPlugin(new PutRemoteFile());
-            //$filesystem->addPlugin(new CallBack());
             return $filesystem;
         });
     }

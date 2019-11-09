@@ -1,9 +1,5 @@
 # Aliyun-oss-storage for Laravel 5+
-Aliyun oss filesystem storage adapter for laravel 5. You can use Aliyun OSS just like laravel Storage as usual.    
-借鉴了一些优秀的代码，综合各方，同时做了更多优化，将会添加更多完善的接口和插件，打造Laravel最好的OSS Storage扩展
-## Inspired By
-- [thephpleague/flysystem-aws-s3-v2](https://github.com/thephpleague/flysystem-aws-s3-v2)
-- [apollopy/flysystem-aliyun-oss](https://github.com/apollopy/flysystem-aliyun-oss) 
+fork自jacobcyl/ali-oss-storage，由于原作者停止维护，故fork过来，修复bug，调整了host配置和获取url策略，更名为DarryZhao/ali-oss-storage。
 
 ## Require
 - Laravel 5+
@@ -12,17 +8,13 @@ Aliyun oss filesystem storage adapter for laravel 5. You can use Aliyun OSS just
 ##Installation
 In order to install AliOSS-storage, just add
 
-    "jacobcyl/ali-oss-storage": "^2.1"
+    "DarryZhao/ali-oss-storage": "^3.0"
 
 to your composer.json. Then run `composer install` or `composer update`.  
 Or you can simply run below command to install:
 
-    "composer require jacobcyl/ali-oss-storage:^2.1"
+    "composer require DarryZhao/ali-oss-storage:^3.0"
     
-Then in your `config/app.php` add this line to providers array:
-```php
-Jacobcyl\AliOSS\AliOssServiceProvider::class,
-```
 ## Configuration
 Add the following in app/filesystems.php:
 ```php
@@ -33,11 +25,11 @@ Add the following in app/filesystems.php:
             'access_id'     => '<Your Aliyun OSS AccessKeyId>',
             'access_key'    => '<Your Aliyun OSS AccessKeySecret>',
             'bucket'        => '<OSS bucket name>',
-            'endpoint'      => '<the endpoint of OSS, E.g: oss-cn-hangzhou.aliyuncs.com | custom domain, E.g:img.abc.com>', // OSS 外网节点或自定义外部域名
-            //'endpoint_internal' => '<internal endpoint [OSS内网节点] 如：oss-cn-shenzhen-internal.aliyuncs.com>', // v2.0.4 新增配置属性，如果为空，则默认使用 endpoint 配置(由于内网上传有点小问题未解决，请大家暂时不要使用内网节点上传，正在与阿里技术沟通中)
-            'cdnDomain'     => '<CDN domain, cdn域名>', // 如果isCName为true, getUrl会判断cdnDomain是否设定来决定返回的url，如果cdnDomain未设置，则使用endpoint来生成url，否则使用cdn
+            'endpoint'      => '<the endpoint of OSS, E.g: oss-cn-hangzhou.aliyuncs.com | custom domain, E.g:img.abc.com>', // OSS 外网节点
+            'endpoint_internal' => '<internal endpoint [OSS内网节点] 如：oss-cn-shenzhen-internal.aliyuncs.com>', // OSS内网节点
+            'cdn_domain'     => '<CDN domain, cdn域名>', // cdn域名或自定义域名
+            'host_use'     => '<CDN domain, cdn域名>', // 使用哪个域名进行操作，可选值：endpoint/endpoint_internal/cdn_domain，默认endpoint
             'ssl'           => <true|false> // true to use 'https://' and false to use 'http://'. default is false,
-            'isCName'       => <true|false> // 是否使用自定义域名,true: 则Storage.url()会使用自定义的cdn或域名生成文件url， false: 则使用外部节点生成url
             'debug'         => <true|false>
     ],
     ...
@@ -91,14 +83,11 @@ Storage::delete(['file1.jpg', 'file2.jpg']);
 Storage::makeDirectory($directory); // Create a directory.
 Storage::deleteDirectory($directory); // Recursively delete a directory.It will delete all files within a given directory, SO Use with caution please.
 
-// upgrade logs
-// new plugin for v2.0 version
 Storage::putRemoteFile('target/path/to/file/jacob.jpg', 'http://example.com/jacob.jpg'); //upload remote file to storage by remote url
-// new function for v2.0.1 version
-Storage::url('path/to/img.jpg') // get the file url
+Storage::url('path/to/img.jpg') // 获取文件链接，先使用cdn_domain，再使用endpoint
+Storage::getPrivateUrl('path/to/img.jpg') // 获取内网链接，必须配置endpoint_internal
+Storage::getPublicUrl('path/to/img.jpg') // 获取外网链接，先使用cdn_domain，再使用endpoint
 ```
 
-## Documentation
-More development detail see [Aliyun OSS DOC](https://help.aliyun.com/document_detail/32099.html?spm=5176.doc31981.6.335.eqQ9dM)
 ## License
 Source code is release under MIT license. Read LICENSE file for more information.

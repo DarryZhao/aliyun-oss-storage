@@ -1,13 +1,8 @@
 <?php
-/**
- * Created by jacob.
- * Date: 2016/5/19 0019
- * Time: 下午 17:07
- */
 
-namespace Jacobcyl\AliOSS;
+namespace DarryZhao\AliOSS;
 
-use Dingo\Api\Contract\Transformer\Adapter;
+use Illuminate\Support\Str;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\Config;
@@ -15,7 +10,6 @@ use League\Flysystem\Util;
 use OSS\Core\OssException;
 use OSS\OssClient;
 use Log;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 
 class AliOssAdapter extends AbstractAdapter
 {
@@ -27,11 +21,11 @@ class AliOssAdapter extends AbstractAdapter
      * @var array
      */
     protected static $resultMap = [
-        'Body'           => 'raw_contents',
+        'Body' => 'raw_contents',
         'Content-Length' => 'size',
-        'ContentType'    => 'mimetype',
-        'Size'           => 'size',
-        'StorageClass'   => 'storage_class',
+        'ContentType' => 'mimetype',
+        'Size' => 'size',
+        'StorageClass' => 'storage_class',
     ];
 
     /**
@@ -50,15 +44,15 @@ class AliOssAdapter extends AbstractAdapter
     ];
 
     protected static $metaMap = [
-        'CacheControl'         => 'Cache-Control',
-        'Expires'              => 'Expires',
+        'CacheControl' => 'Cache-Control',
+        'Expires' => 'Expires',
         'ServerSideEncryption' => 'x-oss-server-side-encryption',
-        'Metadata'             => 'x-oss-metadata-directive',
-        'ACL'                  => 'x-oss-object-acl',
-        'ContentType'          => 'Content-Type',
-        'ContentDisposition'   => 'Content-Disposition',
-        'ContentLanguage'      => 'response-content-language',
-        'ContentEncoding'      => 'Content-Encoding',
+        'Metadata' => 'x-oss-metadata-directive',
+        'ACL' => 'x-oss-object-acl',
+        'ContentType' => 'Content-Type',
+        'ContentDisposition' => 'Content-Disposition',
+        'ContentLanguage' => 'response-content-language',
+        'ContentEncoding' => 'Content-Encoding',
     ];
 
     //Aliyun OSS Client OssClient
@@ -67,7 +61,7 @@ class AliOssAdapter extends AbstractAdapter
     protected $bucket;
 
     protected $endPoint;
-    
+
     protected $cdnDomain;
 
     protected $ssl;
@@ -76,7 +70,7 @@ class AliOssAdapter extends AbstractAdapter
 
     //配置
     protected $options = [
-        'Multipart'   => 128
+        'Multipart' => 128
     ];
 
 
@@ -84,13 +78,13 @@ class AliOssAdapter extends AbstractAdapter
      * AliOssAdapter constructor.
      *
      * @param OssClient $client
-     * @param string    $bucket
-     * @param string    $endPoint
-     * @param bool      $ssl
-     * @param bool      $isCname
-     * @param bool      $debug
-     * @param null      $prefix
-     * @param array     $options
+     * @param string $bucket
+     * @param string $endPoint
+     * @param bool $ssl
+     * @param bool $isCname
+     * @param bool $debug
+     * @param null $prefix
+     * @param array $options
      */
     public function __construct(
         OssClient $client,
@@ -149,10 +143,10 @@ class AliOssAdapter extends AbstractAdapter
         $object = $this->applyPathPrefix($path);
         $options = $this->getOptions($this->options, $config);
 
-        if (! isset($options[OssClient::OSS_LENGTH])) {
+        if (!isset($options[OssClient::OSS_LENGTH])) {
             $options[OssClient::OSS_LENGTH] = Util::contentSize($contents);
         }
-        if (! isset($options[OssClient::OSS_CONTENT_TYPE])) {
+        if (!isset($options[OssClient::OSS_CONTENT_TYPE])) {
             $options[OssClient::OSS_CONTENT_TYPE] = Util::guessMimeType($path, $contents);
         }
         try {
@@ -181,13 +175,14 @@ class AliOssAdapter extends AbstractAdapter
         return $this->write($path, $contents, $config);
     }
 
-    public function writeFile($path, $filePath, Config $config){
+    public function writeFile($path, $filePath, Config $config)
+    {
         $object = $this->applyPathPrefix($path);
         $options = $this->getOptions($this->options, $config);
 
         $options[OssClient::OSS_CHECK_MD5] = true;
 
-        if (! isset($options[OssClient::OSS_CONTENT_TYPE])) {
+        if (!isset($options[OssClient::OSS_CONTENT_TYPE])) {
             $options[OssClient::OSS_CONTENT_TYPE] = Util::guessMimeType($path, '');
         }
         try {
@@ -210,7 +205,7 @@ class AliOssAdapter extends AbstractAdapter
      */
     public function update($path, $contents, Config $config)
     {
-        if (! $config->has('visibility') && ! $config->has('ACL')) {
+        if (!$config->has('visibility') && !$config->has('ACL')) {
             $config->set(static::$metaMap['ACL'], $this->getObjectACL($path));
         }
         // $this->delete($path);
@@ -237,7 +232,7 @@ class AliOssAdapter extends AbstractAdapter
      */
     public function rename($path, $newpath)
     {
-        if (! $this->copy($path, $newpath)){
+        if (!$this->copy($path, $newpath)) {
             return false;
         }
 
@@ -251,7 +246,7 @@ class AliOssAdapter extends AbstractAdapter
     {
         $object = $this->applyPathPrefix($path);
         $newObject = $this->applyPathPrefix($newpath);
-        try{
+        try {
             $this->client->copyObject($this->bucket, $object, $this->bucket, $newObject);
         } catch (OssException $e) {
             $this->logErr(__FUNCTION__, $e);
@@ -269,14 +264,14 @@ class AliOssAdapter extends AbstractAdapter
         $bucket = $this->bucket;
         $object = $this->applyPathPrefix($path);
 
-        try{
+        try {
             $this->client->deleteObject($bucket, $object);
-        }catch (OssException $e) {
+        } catch (OssException $e) {
             $this->logErr(__FUNCTION__, $e);
             return false;
         }
 
-        return ! $this->has($path);
+        return !$this->has($path);
     }
 
     /**
@@ -284,13 +279,12 @@ class AliOssAdapter extends AbstractAdapter
      */
     public function deleteDir($dirname)
     {
-        $dirname = rtrim($this->applyPathPrefix($dirname), '/').'/';
+        $dirname = rtrim($this->applyPathPrefix($dirname), '/') . '/';
         $dirObjects = $this->listDirObjects($dirname, true);
 
-        if(count($dirObjects['objects']) > 0 ){
+        if (count($dirObjects['objects']) > 0) {
 
-            foreach($dirObjects['objects'] as $object)
-            {
+            foreach ($dirObjects['objects'] as $object) {
                 $objects[] = $object['Key'];
             }
 
@@ -320,7 +314,7 @@ class AliOssAdapter extends AbstractAdapter
      * @return mixed
      * @throws OssException
      */
-    public function listDirObjects($dirname = '', $recursive =  false)
+    public function listDirObjects($dirname = '', $recursive = false)
     {
         $delimiter = '/';
         $nextMarker = '';
@@ -329,12 +323,12 @@ class AliOssAdapter extends AbstractAdapter
         //存储结果
         $result = [];
 
-        while(true){
+        while (true) {
             $options = [
                 'delimiter' => $delimiter,
-                'prefix'    => $dirname,
-                'max-keys'  => $maxkeys,
-                'marker'    => $nextMarker,
+                'prefix' => $dirname,
+                'max-keys' => $maxkeys,
+                'marker' => $nextMarker,
             ];
 
             try {
@@ -352,17 +346,17 @@ class AliOssAdapter extends AbstractAdapter
             if (!empty($objectList)) {
                 foreach ($objectList as $objectInfo) {
 
-                    $object['Prefix']       = $dirname;
-                    $object['Key']          = $objectInfo->getKey();
+                    $object['Prefix'] = $dirname;
+                    $object['Key'] = $objectInfo->getKey();
                     $object['LastModified'] = $objectInfo->getLastModified();
-                    $object['eTag']         = $objectInfo->getETag();
-                    $object['Type']         = $objectInfo->getType();
-                    $object['Size']         = $objectInfo->getSize();
+                    $object['eTag'] = $objectInfo->getETag();
+                    $object['Type'] = $objectInfo->getType();
+                    $object['Size'] = $objectInfo->getSize();
                     $object['StorageClass'] = $objectInfo->getStorageClass();
 
                     $result['objects'][] = $object;
                 }
-            }else{
+            } else {
                 $result["objects"] = [];
             }
 
@@ -370,14 +364,14 @@ class AliOssAdapter extends AbstractAdapter
                 foreach ($prefixList as $prefixInfo) {
                     $result['prefix'][] = $prefixInfo->getPrefix();
                 }
-            }else{
+            } else {
                 $result['prefix'] = [];
             }
 
             //递归查询子目录所有文件
-            if($recursive){
-                foreach( $result['prefix'] as $pfix){
-                    $next  =  $this->listDirObjects($pfix , $recursive);
+            if ($recursive) {
+                foreach ($result['prefix'] as $pfix) {
+                    $next = $this->listDirObjects($pfix, $recursive);
                     $result["objects"] = array_merge($result['objects'], $next["objects"]);
                 }
             }
@@ -415,7 +409,7 @@ class AliOssAdapter extends AbstractAdapter
     public function setVisibility($path, $visibility)
     {
         $object = $this->applyPathPrefix($path);
-        $acl = ( $visibility === AdapterInterface::VISIBILITY_PUBLIC ) ? OssClient::OSS_ACL_TYPE_PUBLIC_READ : OssClient::OSS_ACL_TYPE_PRIVATE;
+        $acl = ($visibility === AdapterInterface::VISIBILITY_PUBLIC) ? OssClient::OSS_ACL_TYPE_PUBLIC_READ : OssClient::OSS_ACL_TYPE_PRIVATE;
 
         $this->client->putObjectAcl($this->bucket, $object, $acl);
 
@@ -438,7 +432,7 @@ class AliOssAdapter extends AbstractAdapter
     public function read($path)
     {
         $result = $this->readObject($path);
-        $result['contents'] = (string) $result['raw_contents'];
+        $result['contents'] = (string)$result['raw_contents'];
         unset($result['raw_contents']);
         return $result;
     }
@@ -522,7 +516,7 @@ class AliOssAdapter extends AbstractAdapter
      */
     public function getMimetype($path)
     {
-        if( $object = $this->getMetadata($path))
+        if ($object = $this->getMetadata($path))
             $object['mimetype'] = $object['content-type'];
         return $object;
     }
@@ -532,8 +526,8 @@ class AliOssAdapter extends AbstractAdapter
      */
     public function getTimestamp($path)
     {
-        if( $object = $this->getMetadata($path))
-            $object['timestamp'] = strtotime( $object['last-modified'] );
+        if ($object = $this->getMetadata($path))
+            $object['timestamp'] = strtotime($object['last-modified']);
         return $object;
     }
 
@@ -549,10 +543,10 @@ class AliOssAdapter extends AbstractAdapter
             $this->logErr(__FUNCTION__, $e);
             return false;
         }
-        
-        if ($acl == OssClient::OSS_ACL_TYPE_PUBLIC_READ ){
+
+        if ($acl == OssClient::OSS_ACL_TYPE_PUBLIC_READ) {
             $res['visibility'] = AdapterInterface::VISIBILITY_PUBLIC;
-        }else{
+        } else {
             $res['visibility'] = AdapterInterface::VISIBILITY_PRIVATE;
         }
 
@@ -565,10 +559,26 @@ class AliOssAdapter extends AbstractAdapter
      *
      * @return string
      */
-    public function getUrl( $path )
+    public function getUrl($path)
     {
-        if (!$this->has($path)) throw new FileNotFoundException($filePath.' not found');
-        return ( $this->ssl ? 'https://' : 'http://' ) . ( $this->isCname ? ( $this->cdnDomain == '' ? $this->endPoint : $this->cdnDomain ) : $this->bucket . '.' . $this->endPoint ) . '/' . ltrim($path, '/');
+        if (!$this->has($path)) {
+            throw new \Exception($path . ' not found');
+        }
+        if (empty($this->cdnDomain)) {
+            if (Str::startsWith($this->cdnDomain, ['https://', 'http://'])) {
+                $host = $this->cdnDomain;
+            } else {
+                $host = ($this->ssl ? 'https://' : 'http://') . $this->cdnDomain;
+            }
+        } else {
+            if (Str::startsWith($this->endPoint, ['https://', 'http://'])) {
+                $host = str_replace(['https://', 'http://'], ["https://{$this->bucket}.", "http://{$this->bucket}."], $this->endPoint);
+            } else {
+                $host = ($this->ssl ? 'https://' : 'http://') . $this->bucket . '.' . $this->endPoint;
+            }
+        }
+
+        return $host . '/' . ltrim($path, '/');
     }
 
     /**
@@ -588,7 +598,7 @@ class AliOssAdapter extends AbstractAdapter
     /**
      * Normalize a result from OSS.
      *
-     * @param array  $object
+     * @param array $object
      * @param string $path
      *
      * @return array file metadata
@@ -608,7 +618,7 @@ class AliOssAdapter extends AbstractAdapter
 
             return $result;
         }
-        
+
         $result = array_merge($result, Util::map($object, static::$resultMap), ['type' => 'file']);
 
         return $result;
@@ -617,7 +627,7 @@ class AliOssAdapter extends AbstractAdapter
     /**
      * Get options for a OSS call. done
      *
-     * @param array  $options
+     * @param array $options
      *
      * @return array OSS options
      */
@@ -644,7 +654,7 @@ class AliOssAdapter extends AbstractAdapter
         $options = [];
 
         foreach (static::$metaOptions as $option) {
-            if (! $config->has($option)) {
+            if (!$config->has($option)) {
                 continue;
             }
             $options[static::$metaMap[$option]] = $config->get($option);
@@ -671,10 +681,12 @@ class AliOssAdapter extends AbstractAdapter
      * @param $fun string function name : __FUNCTION__
      * @param $e
      */
-    protected function logErr($fun, $e){
-        if( $this->debug ){
+    protected function logErr($fun, $e)
+    {
+        if ($this->debug) {
             Log::error($fun . ": FAILED");
             Log::error($e->getMessage());
         }
     }
+
 }

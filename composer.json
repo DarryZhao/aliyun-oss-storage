@@ -1,13 +1,13 @@
 {
-    "name": "jacobcyl/ali-oss-storage",
+    "name": "DarryZhao/ali-oss-storage",
     "description": "aliyun oss filesystem storage for laravel 5+",
     "keywords": ["aliyun", "oss", "laravel", "filesystems", "storage"],
-    "homepage": "http://jacobcyl.github.io/Aliyun-oss-storage/",
+    "homepage": "https://github.com/DarryZhao/Aliyun-oss-storage",
     "license": "MIT",
     "authors": [
         {
-            "name": "jacobcyl",
-            "email": "cyl.jacob@gmail.com"
+            "name": "Darry",
+            "email": "DarryZhao@gmail.com"
         }
     ],
     "require": {
@@ -15,13 +15,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Jacobcyl\\AliOSS\\": "src/"
+            "DarryZhao\\AliOSS\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Jacobcyl\\AliOSS\\AliOssServiceProvider"
+                "DarryZhao\\AliOSS\\AliOssServiceProvider"
             ]
         }
     }
