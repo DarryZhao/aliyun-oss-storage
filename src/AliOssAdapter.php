@@ -564,7 +564,7 @@ class AliOssAdapter extends AbstractAdapter
         if (!$this->has($path)) {
             throw new \Exception($path . ' not found');
         }
-        if (empty($this->cdnDomain)) {
+        if (!empty($this->cdnDomain)) {
             if (Str::startsWith($this->cdnDomain, ['https://', 'http://'])) {
                 $host = $this->cdnDomain;
             } else {
