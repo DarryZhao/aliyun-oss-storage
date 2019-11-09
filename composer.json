@@ -1,8 +1,8 @@
 {
-    "name": "DarryZhao/ali-oss-storage",
+    "name": "darry-zhao/ali-oss-storage",
     "description": "aliyun oss filesystem storage for laravel 5+",
     "keywords": ["aliyun", "oss", "laravel", "filesystems", "storage"],
-    "homepage": "https://github.com/DarryZhao/Aliyun-oss-storage",
+    "homepage": "https://github.com/darry-zhao/aliyun-oss-storage",
     "license": "MIT",
     "authors": [
         {
