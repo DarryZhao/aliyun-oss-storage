@@ -1,5 +1,5 @@
 # Aliyun-oss-storage for Laravel 5+
-fork自jacobcyl/ali-oss-storage，由于原作者停止维护，故fork过来，修复bug，调整了host配置和获取url策略，更名为DarryZhao/ali-oss-storage。
+fork自jacobcyl/ali-oss-storage，由于原作者停止维护，故fork过来，修复bug，调整了host配置和获取url策略，更名为darry-zhao/ali-oss-storage。
 
 ## Require
 - Laravel 5+
@@ -8,12 +8,12 @@ fork自jacobcyl/ali-oss-storage，由于原作者停止维护，故fork过来，
 ##Installation
 In order to install AliOSS-storage, just add
 
-    "DarryZhao/ali-oss-storage": "^3.0"
+    "darry-zhao/ali-oss-storage": "^3.0"
 
 to your composer.json. Then run `composer install` or `composer update`.  
 Or you can simply run below command to install:
 
-    "composer require DarryZhao/ali-oss-storage:^3.0"
+    "composer require darry-zhao/ali-oss-storage:^3.0"
     
 ## Configuration
 Add the following in app/filesystems.php:
